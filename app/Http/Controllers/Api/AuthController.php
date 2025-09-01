@@ -63,9 +63,7 @@ class AuthController extends Controller
                 AuthValidation::LOGIN_MESSAGES
             );
 
-            $tenant = Tenant::where('slug', $validated['tenant_slug'])
-                ->where('is_active', true)
-                ->first();
+            $tenant = Tenant::where('slug', $validated['tenant_slug'])->first();
 
             if (!$tenant) {
                 return ApiResponseService::error(
@@ -75,7 +73,15 @@ class AuthController extends Controller
                 );
             }
 
-            if ($tenant->expiry_date < now()) {
+            if (!$tenant->is_active) {
+                return ApiResponseService::error(
+                    AuthConstants::TENANT_INACTIVE,
+                    [],
+                    ApiResponse::HTTP_FORBIDDEN
+                );
+            }
+
+            if (!is_null($tenant->expiry_date) && $tenant->expiry_date < now()) {
                 return ApiResponseService::error(
                     AuthConstants::TENANT_EXPIRED,
                     [],
@@ -95,6 +101,14 @@ class AuthController extends Controller
                 );
             }
 
+            if (!$user->is_active) {
+                return ApiResponseService::error(
+                    AuthConstants::ACCOUNT_INACTIVE,
+                    [],
+                    ApiResponse::HTTP_FORBIDDEN
+                );
+            }
+
             return ApiResponseService::success(
                 AuthConstants::LOGIN_SUCCESS,
                 [
@@ -106,7 +120,7 @@ class AuthController extends Controller
 
         } catch (ValidationException $e) {
             return ApiResponseService::error(
-                AuthConstants::VALIDATION_FAILED, // consistent with signup
+                AuthConstants::VALIDATION_FAILED,
                 $e->errors(),
                 ApiResponse::HTTP_VALIDATION_ERROR
             );
