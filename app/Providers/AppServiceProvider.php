@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register custom middleware for RBAC
+        app('router')->aliasMiddleware('super.admin.bypass', \App\Http\Middleware\SuperAdminBypass::class);
+        app('router')->aliasMiddleware('role.permission', \App\Http\Middleware\RolePermission::class);
     }
 }

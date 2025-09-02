@@ -24,7 +24,17 @@ class User extends Authenticatable
         'email',
         'password',
         'is_active',
+        'is_super_admin',
     ];
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    public function permissions()
+    {
+        return $this->roles()->with('permissions')->get()->pluck('permissions')->flatten()->unique('id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
