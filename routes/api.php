@@ -9,6 +9,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware(['auth:sanctum', 'super.admin.bypass'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
+
+    // User permissions endpoint (for frontend RBAC)
+    Route::get('/user/permissions', [\App\Http\Controllers\Api\AuthController::class, 'userPermissions']);
+
     // Role management (Tenant Admin or Super Admin)
     Route::post('/roles', [\App\Http\Controllers\Api\RoleController::class, 'store']);
     Route::put('/roles/{id}', [\App\Http\Controllers\Api\RoleController::class, 'update']);

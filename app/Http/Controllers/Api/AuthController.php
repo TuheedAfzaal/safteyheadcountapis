@@ -15,6 +15,34 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /**
+     * Get current user's roles and permissions for frontend RBAC
+     */
+    public function userPermissions(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponseService::error(
+                AuthConstants::LOGIN_FAILED,
+                ['auth' => ['User not authenticated']],
+                ApiResponse::HTTP_UNAUTHORIZED
+            );
+        }
+        $roles = $user->roles->pluck('role_name');
+        $permissions = $user->permissions()->map(function($perm) {
+            return [
+                'module' => $perm->module,
+                'action' => $perm->action
+            ];
+        })->values();
+        return ApiResponseService::success('User roles and permissions fetched.', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'roles' => $roles,
+            'permissions' => $permissions
+        ]);
+    }
+
     public function signup(Request $request)
     {
         try {
